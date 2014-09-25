@@ -9,10 +9,9 @@ class Object
     if name.stringy?
       set_dynamic_instant_cache(name, value)
     else
-      raise "instance name value must be a string or symbol"
+      raise "instance variable value must be a string or symbol"
     end
   end
-
 
   def set_dynamic_instant_cache(name, value = nil)
     instance_name = "@#{name.to_s}"
@@ -52,9 +51,4 @@ class Object
   def clear_dynamic_instant_cache(name, value = nil)
     instance_variable_set("@#{name.to_s}", value)
   end
-end
-
-months = %w{ jan feb mar apr may jun jul aug sep oct nov dec}
-months.each_with_index do |month, index|
-  hashed_cache("months", month, index + 1)
 end
