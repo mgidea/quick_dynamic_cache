@@ -25,11 +25,6 @@ class Object
     if key_name && (!values.empty? || !values.nil?)
       key_name = *key_name
       values.each{|value| hash_it(hash, value, key_name)}
-      # if key_name.is_a?(Array)
-      #   values.each{|value| hash_it(hash, key_name, value) if (!values.empty? || !values.nil?)
-      # else
-      #   values.each{|value| hash[key_name] ||= value} if (!values.empty? || !values.nil?)
-      # end
     else
       hash
     end
@@ -42,20 +37,17 @@ class Object
     if keys
       key_name = (keys.is_a?(Array) && keys.size == 1) ? keys.first : keys
       if keys.is_a?(Array) && keys.size > 1
-        keys_string = ""
-        assignment = " ||= {}"
+        cache_it = name
         keys.each_with_index do |key, index|
-          assignment = (index == (keys.size - 1)) ? (value.is_a?(String) ? " ||= '#{value}'" : " ||= #{value}") : " ||= {}"
-          new_key = key.is_a?(String) ? "['#{key}']" : "[#{key}]"
-          keys_string += new_key
-          to_eval = "name" + keys_string + assignment
-          eval "#{to_eval}"
+          assignment = index == (keys.size - 1) ? value : {}
+          cache_it[key] ||= assignment
+          cache_it = cache_it[key]
         end
       else
         name[key_name] ||= value
+        name[key_name]
       end
     end
-    name
   end
 
   def string_in_hash(object)
@@ -85,13 +77,14 @@ class Object
   end
 
   def method_missing(meth, *args, &block)
-    if meth.to_s.end_with?("|")
-      if defined?(meth.to_s[0...-1])
-        item = meth.to_s[0...-1]
-        return (item.is_a?(Array) && item.first) ? item.first : item
+    if meth.to_s.end_with?("1!")
+      if respond_to?(meth.to_s[0...-2])
+        item = send(meth.to_s[0...-2])
+        (item.respond_to?(:first) && item.first) ? item.first : nil
       end
     else
       super(meth, *args, &block)
     end
   end
 end
+
