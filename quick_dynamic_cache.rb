@@ -1,5 +1,4 @@
-# module QuickDynamicCache
-class Object
+module QuickDynamicCache
   def stringy?
     is_a?(String) || is_a?(Symbol)
   end
@@ -76,15 +75,43 @@ class Object
     instance_variable_set("@#{name.to_s}", value)
   end
 
-  def method_missing(meth, *args, &block)
-    if meth.to_s.end_with?("1!")
-      if respond_to?(meth.to_s[0...-2])
-        item = send(meth.to_s[0...-2])
-        (item.respond_to?(:first) && item.first) ? item.first : nil
-      end
+  def firstly
+    case self
+    when String, Array
+      self[0]
+    when Hash
+      self[self.keys.first]
     else
-      super(meth, *args, &block)
+      self
+    end
+  end
+
+  def lastly
+    case self
+    when String, Array
+      self[-1]
+    when Hash
+      self[self.keys.last]
+    else
+      self
+    end
+  end
+
+  def first!
+    if respond_to?(:first)
+      first
+    else
+      new_self = respond_to?(:strip) ? self.strip : self
+      new_self.respond_to?(:empty?) && new_self.empty? ? nil : new_self
+    end
+  end
+
+  def last!
+    if respond_to?(:last)
+      last
+    else
+      new_self = respond_to?(:strip) ? self.strip : self
+      new_self.respond_to?(:empty?) && new_self.empty? ? nil : new_self
     end
   end
 end
-
