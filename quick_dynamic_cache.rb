@@ -76,39 +76,36 @@ module QuickDynamicCache
   end
 
   def firstly
-    case self
-    when String, Array
-      self[0]
-    when Hash
-      self[self.keys.first]
-    else
-      self
-    end
+    firstly_or_lastly(:first)
   end
 
   def lastly
+    firstly_or_lastly(:last)
+  end
+
+  def firstly_or_lastly(method_name)
+    num = method_name == :first ? 0 : -1
     case self
     when String, Array
-      self[-1]
+      self[num]
     when Hash
-      self[self.keys.last]
+      self[self.keys.__send__(method_name)]
     else
       self
     end
   end
 
   def first!
-    if respond_to?(:first)
-      first
-    else
-      new_self = respond_to?(:strip) ? self.strip : self
-      new_self.respond_to?(:empty?) && new_self.empty? ? nil : new_self
-    end
+    first_or_last!(:first)
   end
 
   def last!
-    if respond_to?(:last)
-      last
+    first_or_last!(:last)
+  end
+
+  def first_or_last!(method_name)
+    if respond_to?(method_name)
+      __send__(method_name)
     else
       new_self = respond_to?(:strip) ? self.strip : self
       new_self.respond_to?(:empty?) && new_self.empty? ? nil : new_self
